@@ -1,0 +1,556 @@
+# ddgnorm — kuratierte Konventionstabelle fuer oeffentliche DDG-Datensaetze
+#
+# Zielkonvention dieses Werkzeugs (siehe target unten):
+#   ddg_kcal_mol < 0  =  destabilisierend
+#   ddg_kcal_mol > 0  =  stabilisierend
+#   Einheit kcal/mol
+#
+# sign_factor ist der Faktor, mit dem der Rohwert multipliziert wird, um in die
+# Zielkonvention zu kommen. +1 = Quelle stimmt bereits ueberein, -1 = umdrehen.
+#
+# Jede Konvention hat einen Block "verified" mit Methode, Datum und Zahlen.
+# Was nicht so belegt werden konnte, traegt status: unverified. Der Loader
+# warnt fuer jedes Feld mit status: unverified.
+#
+# Alle Pruefungen am 2026-09-07 auf den Dateien unter data/raw ausgefuehrt.
+# Belege im Detail: DATENLAGE.md.
+
+schema_version: 1
+
+target:
+  sign_convention: negative_destabilizing
+  unit: kcal_per_mol
+  columns:
+    - source
+    - protein_id
+    - id_type
+    - position
+    - wt_aa
+    - mut_aa
+    - ddg_kcal_mol
+    - ph
+    - temperature
+  temperature_unit: celsius
+  notes: >-
+    Temperatur wird auf Grad Celsius vereinheitlicht, weil die Mehrzahl der
+    Quellen Celsius liefert. Quellen in Kelvin werden umgerechnet
+    (siehe temperature.unit je Quelle).
+
+# ---------------------------------------------------------------------------
+
+sources:
+
+  s2648:
+    name: S2648
+    version: "protddg-bench, Abruf 2026-09-07"
+    reference: "Dehouck et al. 2009, Bioinformatics 25:2537"
+    url: https://github.com/protddg-bench/protddg-bench/tree/master/S2648
+    local_path: data/raw/protddg/s2648-10fold-split-0.json
+    format: json_records
+    entries: 2648
+    identifier:
+      type: pdb_chain
+      column: PDB
+      layout: "vier Zeichen PDB-Code plus ein Zeichen Kette, z. B. 1A5EA"
+      status: verified
+    mutation:
+      column: MUT
+      layout: "wt_aa + Position + mut_aa in einem Feld, z. B. W15D"
+      position_basis: pdb_numbering
+      position_basis_status: unverified
+      position_basis_note: >-
+        Die Liste stammt aus PDB-basierten Arbeiten und die Nummerierung
+        stimmt bei Stichproben mit der PDB-Nummerierung ueberein, es gibt
+        aber keine Aussage in der Quelle selbst.
+    ddg:
+      column: DDG
+      unit: kcal_per_mol
+      unit_status: verified
+      convention: negative_destabilizing
+      sign_factor: 1
+      status: verified
+      verified:
+        date: 2026-09-07
+        method: >-
+          Abgleich gemeinsamer Eintraege (PDB, Position, WT-AS, Mut-AS) mit
+          ThermoMutDB, dessen Konvention ueber das eigene Feld "effect"
+          unabhaengig festliegt.
+        numbers:
+          gemeinsame_eintraege_thermomutdb: 1599
+          gleiches_vorzeichen: 1510
+          entgegengesetzt: 56
+          median_betragsverhaeltnis: 1.000
+          verteilung_roh: "568 positiv, 2046 negativ, Median -0.82"
+    ph:
+      column: pH
+      status: verified
+    temperature:
+      column: T
+      unit: celsius
+      status: verified
+      verified:
+        date: 2026-09-07
+        method: Wertebereich geprueft
+        numbers: {min: 0.0, median: 25.0, max: 107.0}
+    notes: >-
+      Das Feld CLID ist eine bereits mitgelieferte Homologie-Cluster-Kennung
+      mit 113 verschiedenen Werten. Wird von ddgnorm nicht verwendet.
+
+  q3421:
+    name: Q3421
+    version: "ThermoNet, Abruf 2026-09-07"
+    reference: "Li et al. 2020, PLoS Comput Biol 16:e1008291"
+    url: https://raw.githubusercontent.com/gersteinlab/ThermoNet/master/data/datasets/Q3421.txt
+    local_path: data/raw/thermonet/Q3421.txt
+    format: whitespace_table_with_header
+    header_lines: 2
+    entries: 3421
+    identifier:
+      type: pdb_chain
+      columns: {pdb: 0, chain: 1}
+      status: verified
+    mutation:
+      columns: {position: 2, wt_aa: 3, mut_aa: 4}
+      position_basis: pdb_numbering
+      position_basis_status: verified
+      position_basis_note: >-
+        Die Datei fuehrt Pos(PDB) und Position(I-TASSER) als getrennte
+        Spalten. ddgnorm verwendet Pos(PDB).
+    ddg:
+      column: 5
+      unit: kcal_per_mol
+      unit_status: verified
+      convention: negative_destabilizing
+      sign_factor: 1
+      status: verified
+      verified:
+        date: 2026-09-07
+        method: >-
+          Abgleich gemeinsamer Eintraege mit S2648, dessen Konvention ueber
+          ThermoMutDB belegt ist.
+        numbers:
+          gemeinsame_eintraege_s2648: 1531
+          gleiches_vorzeichen: 1452
+          entgegengesetzt: 57
+    ph:
+      column: 7
+      status: verified
+    temperature:
+      column: 6
+      unit: celsius
+      status: verified
+      verified:
+        date: 2026-09-07
+        method: Wertebereich geprueft
+        numbers: {min: -8.0, median: 25.0, max: 107.0}
+
+  q3214:
+    name: Q3214
+    version: "ThermoNet, Abruf 2026-09-07"
+    reference: "Li et al. 2020, PLoS Comput Biol 16:e1008291"
+    url: https://raw.githubusercontent.com/gersteinlab/ThermoNet/master/data/datasets/Q3214.txt
+    local_path: data/raw/thermonet/Q3214.txt
+    format: whitespace_table
+    entries: 3214
+    identifier:
+      type: pdb_chain
+      column: 0
+      layout: "PDB-Code und Kette zusammengeschrieben, z. B. 1otrB"
+      status: verified
+    mutation:
+      columns: {position: 1, wt_aa: 2, mut_aa: 3}
+      position_basis: pdb_numbering
+      position_basis_status: unverified
+      position_basis_note: >-
+        Positionen stimmen mit Q3421 Pos(PDB) ueberein, die Datei selbst
+        dokumentiert die Nummerierung nicht.
+    ddg:
+      column: 4
+      unit: kcal_per_mol
+      unit_status: verified
+      convention: positive_destabilizing
+      sign_factor: -1
+      status: verified
+      verified:
+        date: 2026-09-07
+        method: >-
+          Eintragsweiser Abgleich mit Q3421 aus demselben Repository.
+          Reine Vorzeichenumkehr, die Betraege sind identisch.
+        numbers:
+          gemeinsame_eintraege_q3421: 3214
+          gleiches_vorzeichen: 0
+          entgegengesetzt: 3165
+          betragsgleich_toleranz_0_011: 3214
+          rest_49: "Eintraege mit Wert 0.0, Vorzeichen nicht bestimmbar"
+          gegenprobe_s2648: "1374 gemeinsam, davon 1299 entgegengesetzt"
+    ph: {column: null, status: not_available}
+    temperature: {column: null, status: not_available}
+    notes: >-
+      Kernbefund des Werkzeugs: Q3214 und Q3421 liegen im selben Repository
+      und verwenden entgegengesetzte Vorzeichen.
+
+  q1744:
+    name: Q1744
+    version: "ThermoNet, Abruf 2026-09-07"
+    reference: "Li et al. 2020, PLoS Comput Biol 16:e1008291"
+    url: https://raw.githubusercontent.com/gersteinlab/ThermoNet/master/data/datasets/Q1744.txt
+    local_path: data/raw/thermonet/Q1744.txt
+    format: whitespace_table
+    entries: 1744
+    identifier:
+      type: pdb_chain
+      column: 0
+      status: verified
+    mutation:
+      columns: {position: 1, wt_aa: 2, mut_aa: 3}
+      position_basis: pdb_numbering
+      position_basis_status: unverified
+    ddg:
+      column: 4
+      unit: kcal_per_mol
+      unit_status: verified
+      convention: positive_destabilizing
+      sign_factor: -1
+      status: verified
+      verified:
+        date: 2026-09-07
+        method: Eintragsweiser Abgleich mit Q3421 und Q3214.
+        numbers:
+          gemeinsame_eintraege_q3421: 1744
+          entgegengesetzt_zu_q3421: 1730
+          betragsgleich_zu_q3421: 1744
+          gemeinsame_eintraege_q3214: 1744
+          gleiches_vorzeichen_wie_q3214: 1730
+    ph: {column: null, status: not_available}
+    temperature: {column: null, status: not_available}
+    notes: "Teilmenge von Q3214, gleiche Konvention."
+
+  ssym:
+    name: Ssym
+    version: "ThermoNet-Fassung, Abruf 2026-09-07"
+    reference: "Pucci et al. 2018, Bioinformatics 34:3659"
+    url: https://raw.githubusercontent.com/gersteinlab/ThermoNet/master/data/datasets/s_sym.txt
+    local_path: data/raw/thermonet/s_sym.txt
+    format: whitespace_table
+    entries: 342
+    identifier:
+      type: pdb_chain
+      column: 0
+      layout: "Spalte 0 ist die Wildtyp-Kette, Spalte 1 die Mutantenstruktur"
+      status: verified
+    mutation:
+      columns: {position: 2, wt_aa: 3, mut_aa: 4}
+      position_basis: pdb_numbering
+      position_basis_status: unverified
+    ddg:
+      column: 5
+      unit: kcal_per_mol
+      unit_status: verified
+      convention: positive_destabilizing
+      sign_factor: -1
+      status: verified
+      verified:
+        date: 2026-09-07
+        method: >-
+          Abgleich gemeinsamer Eintraege mit S2648. Ssym besteht aus
+          Mutationen in 15 Ketten, die vollstaendig in S2648 enthalten sind.
+        numbers:
+          gemeinsame_eintraege_s2648: 194
+          gleiches_vorzeichen: 12
+          entgegengesetzt: 179
+          verteilung_roh: "252 positiv, 82 negativ"
+    ph: {column: null, status: not_available}
+    temperature: {column: null, status: not_available}
+    notes: >-
+      Diese Datei enthaelt nur die 342 direkten Mutationen. Die zugehoerigen
+      reversen Mutationen sind nicht enthalten.
+
+  s669:
+    name: S669
+    version: "Zenodo 10.5281/zenodo.7568094, Abruf 2026-09-07"
+    reference: "Pancotti et al. 2022, Brief Bioinform 23:bbab555"
+    url: https://zenodo.org/records/7568094
+    local_path: data/raw/s669/S669.csv
+    format: csv
+    entries: 669
+    identifier:
+      type: pdb_chain
+      columns: {pdb: WT_PDB, chain: Chain}
+      status: verified
+    mutation:
+      column: PDB_Mut
+      alternative_column: Seq_Mut
+      layout: "wt_aa + Position + mut_aa, z. B. S11A"
+      position_basis: pdb_numbering
+      position_basis_status: verified
+      position_basis_note: >-
+        Die Datei fuehrt beide Nummerierungen. PDB_Mut und Seq_Mut sind nur
+        bei 336 von 669 Eintraegen identisch, ddgnorm verwendet PDB_Mut
+        passend zum Identifikatortyp pdb_chain.
+    ddg:
+      column: Experimental_DDG_dir
+      unit: kcal_per_mol
+      unit_status: verified
+      convention: negative_destabilizing
+      sign_factor: 1
+      status: verified
+      verified:
+        date: 2026-09-07
+        method: >-
+          Abgleich gemeinsamer Eintraege mit ThermoMutDB, aus dem S669
+          kuratiert wurde.
+        numbers:
+          gemeinsame_eintraege_thermomutdb: 337
+          gleiches_vorzeichen: 332
+          entgegengesetzt: 4
+          median_betragsverhaeltnis: 1.000
+          verteilung_roh: "168 positiv, 499 negativ"
+    ph:
+      column: pH
+      status: verified
+    temperature:
+      column: Temperature
+      unit: kelvin
+      status: verified
+      verified:
+        date: 2026-09-07
+        method: Wertebereich geprueft, klar Kelvin
+        numbers: {min: 281.15, median: 298.15, max: 348.05, fehlend: 8}
+    notes: >-
+      Die Datei enthaelt zusaetzlich die Vorhersagen von 19 Methoden sowie
+      die Spalte Experimental_DDG_inv fuer die reversen Mutationen. Beides
+      wird von ddgnorm nicht geladen.
+
+  thermomutdb:
+    name: ThermoMutDB
+    version: "v1.3 JSON-Abzug, Abruf 2026-09-07"
+    reference: "Xavier et al. 2021, Nucleic Acids Res 49:D475"
+    url: https://biosig.lab.uq.edu.au/thermomutdb/static/data/thermomutdb.json
+    local_path: data/raw/thermomutdb.json
+    format: json_records
+    entries: 13337
+    entries_used: "11201 Einzelmutationen, davon 8806 mit DDG"
+    filter:
+      mutation_type: Single
+      require_ddg: true
+    identifier:
+      type: uniprot
+      column: uniprot
+      fallback:
+        type: pdb_chain
+        columns: {pdb: PDB_wild, chain: mutated_chain}
+      status: verified
+      note: >-
+        UniProt bei 13138 von 13337 Eintraegen vorhanden, PDB_wild bei 12949.
+        Faellt auf pdb_chain zurueck, wenn UniProt fehlt.
+    mutation:
+      column: mutation_code
+      layout: "wt_aa + Position + mut_aa, z. B. E49M"
+      position_basis: mixed
+      position_basis_status: unverified
+      position_basis_note: >-
+        Das Feld mutation_based sagt je Eintrag "PDB and Uniprot" oder
+        Aehnliches. Es gibt keine verlaessliche Zuordnung, welche
+        Nummerierung im Einzelfall gilt. Der Loader warnt.
+    ddg:
+      column: ddg
+      unit: kcal_per_mol
+      unit_status: verified
+      convention: negative_destabilizing
+      sign_factor: 1
+      status: verified
+      verified:
+        date: 2026-09-07
+        method: >-
+          Gegenprobe mit dem quelleneigenen Feld "effect", zusaetzlich
+          Abgleich mit S2648 und S669.
+        numbers:
+          effect_destabilizing_und_negativ: 6316
+          effect_stabilizing_und_positiv: 2287
+          widersprueche: 203
+          gemeinsam_s2648: 1599
+          gleiches_vorzeichen_s2648: 1510
+    ph:
+      column: ph
+      status: verified
+    temperature:
+      column: temperature
+      unit: kelvin
+      status: verified
+      verified:
+        date: 2026-09-07
+        method: Wertebereich geprueft
+        numbers:
+          n: 11971
+          kelvin_bereich: "11968 Werte zwischen 253.15 und 592.75"
+          auffaellig: "3 Werte von genau 25.0, vermutlich Celsius, werden verworfen"
+
+  fireprotdb:
+    name: FireProtDB
+    version: "CSV-Export ueber api/search, Abruf 2026-09-07"
+    reference: "Stourac et al. 2021, Nucleic Acids Res 49:D319"
+    url: https://loschmidt.chemi.muni.cz/fireprotdb/api/search?format=csv&sort=
+    local_path: data/raw/fireprotdb_ddg_only.csv
+    local_path_note: >-
+      Lokal liegen nur die 613208 Zeilen mit DDG-Wert aus dem
+      1.78 GB grossen Vollexport. Spalten unveraendert.
+    format: csv
+    entries: 613208
+    identifier:
+      type: uniprot
+      column: UNIPROTKB
+      fallback:
+        type: pdb
+        column: WWPDB
+      second_fallback:
+        type: megascale_wt_name
+        column: MEGASCALE
+      status: verified
+      note: >-
+        UniProt nur bei 11207 der 613208 DDG-Zeilen. Die MegaScale-Zeilen
+        tragen ihre Kennung ausschliesslich in der Spalte MEGASCALE.
+    mutation:
+      column: SUBSTITUTION
+      layout: "wt_aa + Position + mut_aa"
+      position_basis: unknown
+      position_basis_status: unverified
+      position_basis_note: >-
+        Die Quelle dokumentiert nicht, ob die Position auf UniProt- oder
+        PDB-Nummerierung beruht. Der Loader warnt.
+    ddg:
+      column: DDG
+      unit: kcal_per_mol
+      unit_status: verified
+      convention: mixed_per_subset
+      status: verified
+      subsets:
+        - match: {column: SOURCE_DATASET, equals: ProTherm}
+          rows: 8277
+          convention: positive_destabilizing
+          sign_factor: -1
+          status: verified
+          verified:
+            date: 2026-09-07
+            method: >-
+              Abgleich gemeinsamer Eintraege mit S2648 und mit ThermoMutDB
+              ueber PDB, Position, WT-AS und Mut-AS.
+            numbers:
+              gemeinsam_s2648: 431
+              entgegengesetzt_s2648: 395
+              gemeinsam_thermomutdb: 915
+              entgegengesetzt_thermomutdb: 855
+              median_betragsverhaeltnis: 1.000
+        - match: {column: SOURCE_DATASET, equals: MegaScale}
+          rows: 604920
+          convention: negative_destabilizing
+          sign_factor: 1
+          status: verified
+          verified:
+            date: 2026-09-07
+            method: >-
+              Abgleich mit der Originaltabelle von Tsuboyama 2023 ueber
+              MEGASCALE-Kennung und Substitution.
+            numbers:
+              gemeinsam: 332249
+              gleiches_vorzeichen: 330317
+              entgegengesetzt: 1932
+              median_betragsverhaeltnis: 1.000
+        - match: {column: SOURCE_DATASET, equals: COZYME}
+          rows: 11
+          convention: unknown
+          sign_factor: 1
+          status: unverified
+          note: >-
+            Nur 11 Zeilen, keine Ueberschneidung mit einer anderen Quelle,
+            daher nicht pruefbar. Der Loader warnt und laesst den Wert
+            unveraendert.
+    ph:
+      column: PH
+      status: verified
+    temperature:
+      column: EXP_TEMPERATURE
+      unit: celsius
+      status: verified
+      verified:
+        date: 2026-09-07
+        method: Wertebereich geprueft
+        numbers: {n: 7900, min: -15.0, median: 25.0, max: 133.6}
+    notes: >-
+      Zwei Fallen in dieser Quelle. Erstens die uneinheitliche Konvention
+      zwischen den Teilmengen, siehe subsets. Zweitens mehrere Messungen je
+      Mutation mit widerspruechlichen Werten, Beispiel 1WQ5 F22L mit -2.2
+      und +0.8 in zwei Zeilen. ddgnorm fasst nichts zusammen und gibt beide
+      Zeilen aus.
+
+  megascale:
+    name: Megascale (Tsuboyama 2023)
+    version: "Zenodo 10.5281/zenodo.7992926, Abruf 2026-09-07"
+    reference: "Tsuboyama et al. 2023, Nature 620:434"
+    url: https://zenodo.org/records/7992926
+    local_path: data/raw/megascale_ddG_slim.csv
+    local_path_note: >-
+      Auf acht Spalten reduzierte Fassung von
+      Processed_K50_dG_datasets/Tsuboyama2023_Dataset2_Dataset3_20230416.csv.
+    format: csv
+    entries: 776298
+    entries_used: "487914 Einzelmutationen, davon 389068 mit ddG_ML"
+    filter:
+      mut_type_matches: "^[A-Z][0-9]+[A-Z]$"
+      require_ddg: true
+    identifier:
+      type: megascale_wt_name
+      column: WT_name
+      status: verified
+      note: >-
+        479 verschiedene Werte, davon 318 in der Form eines PDB-Codes, der
+        Rest de-novo-Designs ohne Eintrag in PDB oder UniProt. Kein
+        Datenbank-Akzessionscode, deshalb ein eigener Identifikatortyp.
+    mutation:
+      column: mut_type
+      layout: "wt_aa + Position + mut_aa"
+      position_basis: sequence_index_1based
+      position_basis_status: verified
+      position_basis_note: >-
+        Position bezieht sich auf die mitgelieferte Spalte aa_seq, und zwar
+        1-basiert. aa_seq ist die mutierte Sequenz.
+      verified:
+        date: 2026-09-07
+        method: "Test aa_seq[position-1] == mut_aa an den ersten 60000 Zeilen"
+        numbers: {uebereinstimmend: 60000, abweichend: 0}
+    ddg:
+      column: ddG_ML
+      unit: kcal_per_mol
+      unit_status: verified
+      convention: negative_destabilizing
+      sign_factor: 1
+      status: verified
+      verified:
+        date: 2026-09-07
+        method: >-
+          Zwei unabhaengige Pruefungen. Erstens das quelleneigene Feld
+          Stabilizing_mut. Zweitens die interne Rechnung
+          ddG_ML = dG_ML(Mutante) - dG_ML(Wildtyp), wobei dG die
+          Faltungsstabilitaet ist und hoehere Werte stabiler bedeuten.
+        numbers:
+          stabilizing_mut_true_und_positiv: "2112 von 2112"
+          median_abweichung_ddg_minus_dg_differenz: 0.0000
+          n_geprueft: 389068
+    ph: {column: null, status: not_available}
+    temperature: {column: null, status: not_available}
+    notes: >-
+      Die Werte stammen aus einem Proteolyse-Assay, nicht aus klassischer
+      Entfaltung. pH und Temperatur sind im Datensatz konstant und werden
+      nicht je Zeile gefuehrt. Sequenz liegt je Zeile bei, deshalb ist diese
+      Quelle die einzige, bei der die Wildtyp-Aminosaeure ohne externen
+      Abruf pruefbar ist.
+
+# ---------------------------------------------------------------------------
+
+excluded:
+  prothermdb:
+    reason: >-
+      Bulk-Download nur ueber ein Formular mit Name, E-Mail, Organisation und
+      Funktion. Nicht ausgefuellt, daher sind Format, Spalten, Einheiten und
+      Vorzeichenkonvention unbekannt.
+    url: https://web.iitm.ac.in/bioinfo2/prothermdb/Downloads.html
+    status: unverified

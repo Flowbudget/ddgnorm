@@ -1,0 +1,22 @@
+{
+  "title": "ddgnorm: unifying sign conventions, units and identifiers of public protein stability (ddG) datasets",
+  "upload_type": "software",
+  "license": "MIT",
+  "creators": [
+    {
+      "name": "Scheide, Florian"
+    }
+  ],
+  "description": "<p>Public datasets of protein stability changes upon point mutation (&Delta;&Delta;G) disagree on the sign convention, and the disagreement is undocumented. Measured on the data itself: FireProtDB and S2648 report opposite signs for 395 of 431 shared mutations; FireProtDB is inconsistent within itself, since its ProTherm-derived rows are flipped while its MegaScale-derived rows are not; Q3421 and Q3214, two files in the same repository, hold the same 3214 mutations with identical magnitudes and opposite signs; Ssym and S2648 disagree on 179 of 194 shared mutations.</p><p>ddgnorm records the convention of each source in a curated YAML table in which every entry carries the verification method and the numbers behind it, and loads nine sources into one frame with a fixed convention: negative is destabilizing, values in kcal/mol, temperature in degrees Celsius. Anything that could not be verified is marked unverified and raises a warning on load. A check command flags flipped signs, kJ/mol values, contradictory duplicate measurements and shifted position numbering, the last of these against a supplied FASTA file.</p><p>Covered sources: S2648, Q3421, Q3214, Q1744, Ssym, S669, ThermoMutDB, FireProtDB and the Tsuboyama 2023 megascale dataset. ProThermDB is excluded because its bulk download requires a registration form.</p>",
+  "keywords": [
+    "protein stability",
+    "ddG",
+    "data curation",
+    "sign convention",
+    "reproducibility",
+    "FireProtDB",
+    "ThermoMutDB",
+    "megascale"
+  ],
+  "access_right": "open"
+}

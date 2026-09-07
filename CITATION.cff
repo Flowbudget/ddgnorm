@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+title: "ddgnorm: unifying sign conventions, units and identifiers of public protein stability (ddG) datasets"
+message: "If you use this software, please cite it using these metadata."
+type: software
+authors:
+  - given-names: Florian
+    family-names: Scheide
+    alias: Flowbudget
+repository-code: "https://github.com/Flowbudget/ddgnorm"
+license: MIT
+version: 0.1.0
+date-released: "2026-09-07"
+abstract: >-
+  Public datasets of protein stability changes upon point mutation (ddG)
+  disagree on the sign convention, and the disagreement is undocumented.
+  FireProtDB and S2648 report opposite signs for 395 of 431 shared mutations,
+  and FireProtDB is inconsistent within itself: its ProTherm-derived rows are
+  flipped while its MegaScale-derived rows are not. Q3421 and Q3214, two files
+  in the same repository, hold the same 3214 mutations with identical
+  magnitudes and opposite signs. ddgnorm records the convention of each source
+  in a curated table, together with the method and the numbers used to verify
+  it, and converts nine sources into one frame with a fixed convention
+  (negative is destabilizing, kcal/mol). A check command flags flipped signs,
+  unit mistakes, contradictory duplicates and shifted position numbering.
+keywords:
+  - protein stability
+  - ddG
+  - data curation
+  - sign convention
+  - FireProtDB
+  - ThermoMutDB
+  - S2648
+  - S669
+  - Ssym
+  - megascale

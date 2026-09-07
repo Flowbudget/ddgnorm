@@ -1,0 +1,362 @@
+[
+ {
+  "SET": "SET_9",
+  "CLID": "1WQ5A",
+  "PDB": "1WQ5A",
+  "MUT": "F22L",
+  "DDG": 1.4,
+  "pH": 7.8,
+  "T": 25.0
+ },
+ {
+  "SET": "SET_9",
+  "CLID": "1WQ5A",
+  "PDB": "1WQ5A",
+  "MUT": "I37A",
+  "DDG": -4.42,
+  "pH": 7.8,
+  "T": 25.0
+ },
+ {
+  "SET": "SET_9",
+  "CLID": "1WQ5A",
+  "PDB": "1WQ5A",
+  "MUT": "E49G",
+  "DDG": -0.03,
+  "pH": 7.8,
+  "T": 25.0
+ },
+ {
+  "SET": "SET_6",
+  "CLID": "1AKYA",
+  "PDB": "1ANKA",
+  "MUT": "D84H",
+  "DDG": -1.4,
+  "pH": 7.2,
+  "T": 51.8
+ },
+ {
+  "SET": "SET_6",
+  "CLID": "1AKYA",
+  "PDB": "1ANKA",
+  "MUT": "G85V",
+  "DDG": -2.4,
+  "pH": 7.2,
+  "T": 51.8
+ },
+ {
+  "SET": "SET_6",
+  "CLID": "1AKYA",
+  "PDB": "1ANKA",
+  "MUT": "F86L",
+  "DDG": -0.8,
+  "pH": 7.2,
+  "T": 51.8
+ },
+ {
+  "SET": "SET_4",
+  "CLID": "1EL1A",
+  "PDB": "1LZ1A",
+  "MUT": "G37A",
+  "DDG": -0.29,
+  "pH": 2.7,
+  "T": 64.9
+ },
+ {
+  "SET": "SET_4",
+  "CLID": "1EL1A",
+  "PDB": "1LZ1A",
+  "MUT": "Y38F",
+  "DDG": -0.19,
+  "pH": 2.7,
+  "T": 64.9
+ },
+ {
+  "SET": "SET_4",
+  "CLID": "1EL1A",
+  "PDB": "1LZ1A",
+  "MUT": "Y63F",
+  "DDG": -0.24,
+  "pH": 2.7,
+  "T": 64.9
+ },
+ {
+  "SET": "SET_4",
+  "CLID": "1EL1A",
+  "PDB": "4LYZA",
+  "MUT": "G67A",
+  "DDG": -1.19,
+  "pH": 4.2,
+  "T": 48.8
+ },
+ {
+  "SET": "SET_6",
+  "CLID": "2A36A",
+  "PDB": "2A36A",
+  "MUT": "T22G",
+  "DDG": 3.59,
+  "pH": 6.0,
+  "T": 20.1
+ },
+ {
+  "SET": "SET_8",
+  "CLID": "1FLVA",
+  "PDB": "1FTGA",
+  "MUT": "I52V",
+  "DDG": -1.19,
+  "pH": 7.0,
+  "T": 34.6
+ },
+ {
+  "SET": "SET_0",
+  "CLID": "2RN2A",
+  "PDB": "2RN2A",
+  "MUT": "D10N",
+  "DDG": 0.99,
+  "pH": 6.8,
+  "T": 48.1
+ },
+ {
+  "SET": "SET_0",
+  "CLID": "2RN2A",
+  "PDB": "2RN2A",
+  "MUT": "D10A",
+  "DDG": 3.4,
+  "pH": 6.8,
+  "T": 48.1
+ },
+ {
+  "SET": "SET_0",
+  "CLID": "2RN2A",
+  "PDB": "2RN2A",
+  "MUT": "D10E",
+  "DDG": 1.04,
+  "pH": 6.8,
+  "T": 48.1
+ },
+ {
+  "SET": "SET_1",
+  "CLID": "1BNIA",
+  "PDB": "1BNIA",
+  "MUT": "I51V",
+  "DDG": -1.66,
+  "pH": 5.9,
+  "T": 25.0
+ },
+ {
+  "SET": "SET_1",
+  "CLID": "1BNIA",
+  "PDB": "1BNIA",
+  "MUT": "I51A",
+  "DDG": -4.71,
+  "pH": 6.3,
+  "T": 25.0
+ },
+ {
+  "SET": "SET_6",
+  "CLID": "1MJCA",
+  "PDB": "1MJCA",
+  "MUT": "F18L",
+  "DDG": -1.0,
+  "pH": 7.0,
+  "T": 25.0
+ },
+ {
+  "SET": "SET_6",
+  "CLID": "1MJCA",
+  "PDB": "1MJCA",
+  "MUT": "F18S",
+  "DDG": -1.54,
+  "pH": 7.0,
+  "T": 25.0
+ },
+ {
+  "SET": "SET_6",
+  "CLID": "1MJCA",
+  "PDB": "1MJCA",
+  "MUT": "F20L",
+  "DDG": -0.31,
+  "pH": 7.0,
+  "T": 25.0
+ },
+ {
+  "SET": "SET_6",
+  "CLID": "1MJCA",
+  "PDB": "1C9OA",
+  "MUT": "Q2L",
+  "DDG": 0.48,
+  "pH": 7.0,
+  "T": 47.6
+ },
+ {
+  "SET": "SET_6",
+  "CLID": "1MJCA",
+  "PDB": "1C9OA",
+  "MUT": "R3E",
+  "DDG": -1.46,
+  "pH": 7.0,
+  "T": 47.6
+ },
+ {
+  "SET": "SET_6",
+  "CLID": "1MJCA",
+  "PDB": "1C9OA",
+  "MUT": "R3L",
+  "DDG": -0.11,
+  "pH": 7.0,
+  "T": 47.6
+ },
+ {
+  "SET": "SET_6",
+  "CLID": "1MJCA",
+  "PDB": "1CSPA",
+  "MUT": "M1R",
+  "DDG": 1.75,
+  "pH": 7.0,
+  "T": 70.0
+ },
+ {
+  "SET": "SET_6",
+  "CLID": "1MJCA",
+  "PDB": "1CSPA",
+  "MUT": "E3R",
+  "DDG": 1.77,
+  "pH": 7.3,
+  "T": 52.8
+ },
+ {
+  "SET": "SET_6",
+  "CLID": "1MJCA",
+  "PDB": "1CSPA",
+  "MUT": "E3L",
+  "DDG": 1.59,
+  "pH": 7.0,
+  "T": 70.0
+ },
+ {
+  "SET": "SET_7",
+  "CLID": "1ROPA",
+  "PDB": "1ROPA",
+  "MUT": "D30G",
+  "DDG": 2.0,
+  "pH": 7.0,
+  "T": 69.0
+ },
+ {
+  "SET": "SET_7",
+  "CLID": "1ROPA",
+  "PDB": "1ROPA",
+  "MUT": "D30Q",
+  "DDG": 1.8,
+  "pH": 7.0,
+  "T": 69.0
+ },
+ {
+  "SET": "SET_7",
+  "CLID": "1ROPA",
+  "PDB": "1ROPA",
+  "MUT": "D30E",
+  "DDG": 1.0,
+  "pH": 7.0,
+  "T": 69.0
+ },
+ {
+  "SET": "SET_9",
+  "CLID": "2CI2I",
+  "PDB": "2CI2I",
+  "MUT": "E34N",
+  "DDG": -0.58,
+  "pH": 6.2,
+  "T": 25.0
+ },
+ {
+  "SET": "SET_9",
+  "CLID": "2CI2I",
+  "PDB": "2CI2I",
+  "MUT": "E34Q",
+  "DDG": -0.58,
+  "pH": 6.2,
+  "T": 25.0
+ },
+ {
+  "SET": "SET_9",
+  "CLID": "2CI2I",
+  "PDB": "2CI2I",
+  "MUT": "E34D",
+  "DDG": -0.19,
+  "pH": 6.2,
+  "T": 25.0
+ },
+ {
+  "SET": "SET_9",
+  "CLID": "1AM7A",
+  "PDB": "1AM7A",
+  "MUT": "H31D",
+  "DDG": -1.6,
+  "pH": 7.0,
+  "T": 25.0
+ },
+ {
+  "SET": "SET_9",
+  "CLID": "1AM7A",
+  "PDB": "1AM7A",
+  "MUT": "H48N",
+  "DDG": -5.0,
+  "pH": 7.0,
+  "T": 25.0
+ },
+ {
+  "SET": "SET_8",
+  "CLID": "1BTAA",
+  "PDB": "1BTAA",
+  "MUT": "K22Q",
+  "DDG": -0.79,
+  "pH": 8.0,
+  "T": 25.0
+ },
+ {
+  "SET": "SET_5",
+  "CLID": "2HPRA",
+  "PDB": "2HPRA",
+  "MUT": "S46D",
+  "DDG": 0.72,
+  "pH": 7.0,
+  "T": 54.2
+ },
+ {
+  "SET": "SET_0",
+  "CLID": "1A5EA",
+  "PDB": "1A5EA",
+  "MUT": "W15D",
+  "DDG": 0.19,
+  "pH": 8.5,
+  "T": 20.0
+ },
+ {
+  "SET": "SET_0",
+  "CLID": "1A5EA",
+  "PDB": "1A5EA",
+  "MUT": "L37S",
+  "DDG": 0.81,
+  "pH": 8.5,
+  "T": 20.0
+ },
+ {
+  "SET": "SET_0",
+  "CLID": "1A5EA",
+  "PDB": "1A5EA",
+  "MUT": "L121R",
+  "DDG": 0.55,
+  "pH": 8.5,
+  "T": 20.0
+ },
+ {
+  "SET": "SET_6",
+  "CLID": "1AZPA",
+  "PDB": "1AZPA",
+  "MUT": "V30I",
+  "DDG": 0.7,
+  "pH": 7.0,
+  "T": 50.0
+ }
+]
