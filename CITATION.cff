@@ -7,6 +7,14 @@ authors:
     family-names: Scheide
     alias: Flowbudget
 repository-code: "https://github.com/Flowbudget/ddgnorm"
+doi: 10.5281/zenodo.22648546
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.22648546
+    description: "Concept DOI, zeigt immer auf die neueste Fassung"
+  - type: doi
+    value: 10.5281/zenodo.22648547
+    description: "DOI der Fassung 0.1.0"
 license: MIT
 version: 0.1.0
 date-released: "2026-09-07"

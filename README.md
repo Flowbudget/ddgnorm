@@ -1,5 +1,7 @@
 # ddgnorm
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22648546.svg)](https://doi.org/10.5281/zenodo.22648546)
+
 Vereinheitlicht oeffentliche ΔΔG-Datensaetze zur Proteinstabilitaet:
 Vorzeichen, Einheiten, Identifikatoren.
 
@@ -135,3 +137,12 @@ pytest
 Ausschnitte der echten Dateien, erzeugt von `tests/make_fixtures.py`. Die drei
 oben genannten Widersprueche sind als Regressionstests festgehalten: roh
 gegenlaeufig, nach der Normalisierung gleichgerichtet.
+
+## Zitieren
+
+Jede Fassung wird bei Zenodo archiviert. Die DOI 10.5281/zenodo.22648546 zeigt
+immer auf die jeweils neueste Fassung, 10.5281/zenodo.22648547 fest auf 0.1.0.
+
+    Scheide, F. (2026). ddgnorm: unifying sign conventions, units and
+    identifiers of public protein stability (ddG) datasets (v0.1.0).
+    Zenodo. https://doi.org/10.5281/zenodo.22648546
