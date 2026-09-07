@@ -1,9 +1,9 @@
-"""Leser fuer die einzelnen Quellen.
+"""One reader per source.
 
-Jeder Leser gibt einen Rohrahmen mit den Spalten protein_id, id_type,
-position, wt_aa, mut_aa, ddg_raw, ph, temperature_raw und optional subset
-zurueck. Die Vereinheitlichung (Vorzeichen, Einheiten) macht danach
-_finalize anhand von sources.yaml.
+Every reader returns a raw frame with the columns protein_id, id_type,
+position, wt_aa, mut_aa, ddg_raw, ph, temperature_raw and, where needed,
+subset. Unification of signs and units happens afterwards in _finalize,
+driven by sources.yaml.
 """
 
 from __future__ import annotations
@@ -31,11 +31,11 @@ COLUMNS = [
 ]
 
 MUT_RE = re.compile(r"^([A-Z])(-?\d+)([A-Z])$")
-KELVIN_FLOOR = 100.0  # darunter ist der Wert sicher keine Kelvin-Angabe
+KELVIN_FLOOR = 100.0  # below this a value cannot be a temperature in Kelvin
 
 
 class ConventionWarning(UserWarning):
-    """Weist auf ein Feld hin, das in sources.yaml als unverified steht."""
+    """Points at a field that sources.yaml marks as unverified."""
 
 
 def _pdb_chain(pdb: str, chain: str | None) -> str:
@@ -51,7 +51,7 @@ def _parse_mut(text: str) -> tuple[str, int, str] | None:
 
 
 def _clean(value) -> str:
-    """Leerer String fuer fehlende Werte, inklusive der Zeichenkette 'nan'."""
+    """Empty string for missing values, including the literal 'nan'."""
     text = str(value or "").strip()
     return "" if text.lower() in {"", "nan", "none", "-"} else text
 
@@ -59,9 +59,9 @@ def _clean(value) -> str:
 def _pick_identifier(
     candidates: dict[str, tuple[str, str]], preference: str
 ) -> tuple[str, str] | None:
-    """Waehlt den Identifikator nach Vorliebe, mit Rueckfall auf den anderen.
+    """Picks the preferred identifier, falling back to the other one.
 
-    candidates bildet 'pdb' und 'uniprot' auf (protein_id, id_type) ab.
+    candidates maps 'pdb' and 'uniprot' to (protein_id, id_type).
     """
     order = ["pdb", "uniprot"] if preference == "pdb" else ["uniprot", "pdb"]
     for name in order:
@@ -79,7 +79,7 @@ def _to_float(value) -> float:
 
 
 # --------------------------------------------------------------------------
-# Leser je Quelle
+# Readers, one per source
 
 
 def read_s2648(path: Path) -> pd.DataFrame:
@@ -133,7 +133,7 @@ def read_q3421(path: Path) -> pd.DataFrame:
 
 
 def _read_thermonet_plain(path: Path) -> pd.DataFrame:
-    """Format von Q3214 und Q1744: Kette, Position, WT, Mutante, ddG."""
+    """Layout of Q3214 and Q1744: chain, position, wild type, mutant, ddG."""
     rows = []
     for line in Path(path).read_text(encoding="utf-8").splitlines():
         parts = line.split()
@@ -159,7 +159,7 @@ def _read_thermonet_plain(path: Path) -> pd.DataFrame:
 
 
 def read_ssym(path: Path) -> pd.DataFrame:
-    """Spalte 1 ist die Mutantenstruktur und wird nicht uebernommen."""
+    """Column 1 holds the mutant structure and is not carried over."""
     rows = []
     for line in Path(path).read_text(encoding="utf-8").splitlines():
         parts = line.split()
@@ -334,7 +334,7 @@ def read_megascale(path: Path) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-# Quellen, die zwei Identifikatortypen fuehren und daher id_preference kennen.
+# Sources that carry two identifier types and therefore honour id_preference.
 ID_AWARE = {"thermomutdb", "fireprotdb"}
 
 READERS: dict[str, Callable[..., pd.DataFrame]] = {
@@ -351,13 +351,13 @@ READERS: dict[str, Callable[..., pd.DataFrame]] = {
 
 
 # --------------------------------------------------------------------------
-# Vereinheitlichung
+# Unification
 
 
 def _warn_unverified(key: str, frame: pd.DataFrame) -> None:
     for field in config.unverified_fields(key):
         warnings.warn(
-            f"{key}: {field} ist in sources.yaml als unverified markiert",
+            f"{key}: {field} is marked unverified in sources.yaml",
             ConventionWarning,
             stacklevel=3,
         )
@@ -371,8 +371,8 @@ def _warn_unverified(key: str, frame: pd.DataFrame) -> None:
             affected = 0
         if affected:
             warnings.warn(
-                f"{key}: {affected} Zeilen aus der Teilmenge {value!r} haben "
-                "keine belegte Vorzeichenkonvention und bleiben unveraendert",
+                f"{key}: {affected} rows from subset {value!r} have no "
+                "verified sign convention and are passed through unchanged",
                 ConventionWarning,
                 stacklevel=3,
             )
@@ -390,7 +390,7 @@ def _convert_temperature(key: str, frame: pd.DataFrame) -> pd.Series:
     spec = config.get_source(key).get("temperature", {})
     values = frame["temperature_raw"].astype(float)
     if spec.get("unit") == "kelvin":
-        values = values.where(values >= KELVIN_FLOOR)  # Ausreisser verwerfen
+        values = values.where(values >= KELVIN_FLOOR)  # drop stray outliers
         return values - 273.15
     return values
 
@@ -399,8 +399,8 @@ def _finalize(key: str, frame: pd.DataFrame, warn: bool) -> pd.DataFrame:
     unit = config.get_source(key)["ddg"].get("unit")
     if unit != config.target()["unit"]:
         raise ValueError(
-            f"{key}: Einheit {unit!r} wird nicht unterstuetzt, "
-            f"erwartet {config.target()['unit']!r}"
+            f"{key}: unit {unit!r} is not supported, "
+            f"expected {config.target()['unit']!r}"
         )
     if warn:
         _warn_unverified(key, frame)
@@ -429,26 +429,26 @@ def load_source(
     warn: bool = True,
     id_preference: str = "pdb",
 ) -> pd.DataFrame:
-    """Laedt eine Quelle und gibt sie in der Zielkonvention zurueck.
+    """Loads one source and returns it in the target convention.
 
-    path uebersteuert den in sources.yaml hinterlegten Ort, was fuer Tests
-    mit kleinen Fixtures gebraucht wird.
+    path overrides the location recorded in sources.yaml, which is what the
+    tests use to read the small fixtures.
 
-    id_preference greift nur bei Quellen, die zwei Identifikatortypen fuehren
-    (ThermoMutDB, FireProtDB). Voreinstellung 'pdb', weil die Mehrzahl der
-    uebrigen Quellen auf PDB schluesselt und ein Zusammenfuehren sonst
-    unmoeglich ist. 'uniprot' waehlt umgekehrt.
+    id_preference only matters for sources that carry two identifier types
+    (ThermoMutDB, FireProtDB). The default 'pdb' is chosen because most of the
+    other sources are keyed by PDB, so anything else makes merging impossible.
+    Pass 'uniprot' for the opposite preference.
     """
     if key not in READERS:
         raise KeyError(
-            f"Fuer {key!r} gibt es keinen Leser. Bekannt: {', '.join(READERS)}"
+            f"No reader for {key!r}. Known sources: {', '.join(READERS)}"
         )
     if id_preference not in {"pdb", "uniprot"}:
-        raise ValueError("id_preference muss 'pdb' oder 'uniprot' sein")
+        raise ValueError("id_preference must be 'pdb' or 'uniprot'")
     location = Path(path) if path is not None else config.source_path(key, data_root)
     if not location.exists():
         raise FileNotFoundError(
-            f"{key}: {location} fehlt. Siehe local_path in sources.yaml."
+            f"{key}: {location} is missing. See local_path in sources.yaml."
         )
     reader = READERS[key]
     raw = reader(location, id_preference) if key in ID_AWARE else reader(location)

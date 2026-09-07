@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ddgnorm"
 version = "0.1.0"
-description = "Vereinheitlicht oeffentliche DDG-Datensaetze zur Proteinstabilitaet (Vorzeichen, Einheiten, Identifikatoren)"
+description = "Unify public protein stability (ddG) datasets: signs, units, identifiers"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["pandas>=2.0", "pyyaml>=6.0", "click>=8.1"]

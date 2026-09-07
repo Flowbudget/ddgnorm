@@ -2,28 +2,26 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22648546.svg)](https://doi.org/10.5281/zenodo.22648546)
 
-Vereinheitlicht oeffentliche ΔΔG-Datensaetze zur Proteinstabilitaet:
-Vorzeichen, Einheiten, Identifikatoren.
+Unify public protein stability (ΔΔG) datasets: signs, units, identifiers.
 
-## Das Problem
+## The problem
 
-Die gaengigen Datensaetze widersprechen sich in der Vorzeichenkonvention, und
-zwar ohne dass es irgendwo dokumentiert waere. Belegt an den Daten selbst
-(Stand 2026-09-07, Details in [DATENLAGE.md](DATENLAGE.md)):
+The common datasets disagree on the sign convention, and the disagreement is
+documented nowhere. Measured on the data itself on 2026-09-07:
 
-- **FireProtDB gegen S2648**: von 431 gemeinsamen Mutationen hatten 395 das
-  entgegengesetzte Vorzeichen.
-- **FireProtDB gegen sich selbst**: die aus ProTherm uebernommenen Zeilen sind
-  umgedreht, die MegaScale-Zeilen nicht. Eine Regel pro Datei reicht nicht.
-- **Q3421 gegen Q3214**: dieselben 3214 Mutationen, dieselben Betraege,
-  entgegengesetztes Vorzeichen, beide Dateien liegen im selben Repository.
-- **Ssym gegen S2648**: 179 von 194 gemeinsamen Mutationen entgegengesetzt.
+- **FireProtDB against S2648**: of 431 shared mutations, 395 carried the
+  opposite sign.
+- **FireProtDB against itself**: the rows taken from ProTherm are flipped, the
+  MegaScale rows are not. One rule per file is not enough.
+- **Q3421 against Q3214**: the same 3214 mutations, the same magnitudes,
+  opposite signs, both files sitting in the same repository.
+- **Ssym against S2648**: 179 of 194 shared mutations opposite.
 
-Wer zwei Quellen zusammenfuehrt, bekommt still falsche Daten. Der Fehler faellt
-nicht auf, weil beide Seiten plausibel aussehen.
+Merge two sources and you silently get wrong data. The mistake does not
+announce itself, because both sides look plausible on their own.
 
-ddgnorm haelt die Konventionen in einer kuratierten Tabelle fest, bei der jeder
-Eintrag mit Methode und Zahlen belegt ist, und rechnet beim Laden um.
+ddgnorm keeps the conventions in a curated table where every entry carries the
+method and the numbers that established it, and converts on load.
 
 ## Installation
 
@@ -31,21 +29,21 @@ Eintrag mit Methode und Zahlen belegt ist, und rechnet beim Laden um.
 pip install -e .
 ```
 
-Nur pandas, pyyaml und click. Die Rohdaten liegen nicht im Repository, ihre
-Herkunft steht als `url` und `local_path` in `ddgnorm/sources.yaml`.
+Only pandas, pyyaml and click. The raw data is not part of the repository; its
+provenance is recorded as `url` and `local_path` in `ddgnorm/sources.yaml`.
 
-## Beispielaufruf
+## Example
 
 ```bash
 ddgnorm load s2648 -o s2648.csv
 ```
 
 ```
-s2648: 2644 Zeilen, 132 Proteine, 2045 destabilisierend -> s2648.csv
-Konvention der Quelle: negative_destabilizing, Ziel: negative_destabilizing in kcal_per_mol
+s2648: 2644 rows, 132 proteins, 2045 destabilizing -> s2648.csv
+Convention of the source: negative_destabilizing, target: negative_destabilizing in kcal_per_mol
 ```
 
-Ausgabe ist immer dasselbe Schema, unabhaengig von der Quelle:
+The output schema is the same for every source:
 
 ```
 source,protein_id,id_type,position,wt_aa,mut_aa,ddg_kcal_mol,ph,temperature
@@ -53,79 +51,78 @@ s2648,1A5E_A,pdb_chain,121,L,R,0.55,8.5,20.0
 s2648,1A5E_A,pdb_chain,37,L,S,0.81,8.5,20.0
 ```
 
-Danach die Plausibilitaetspruefung, hier auf einer aus zwei Quellen
-zusammengefuegten Datei:
+Then the plausibility check, here on a file merged from two sources:
 
 ```bash
 ddgnorm check merged.csv
 ```
 
 ```
-  [umfang] 9353 Zeilen, 302 Proteine, Quellen: fireprotdb, s2648
-  [vorzeichen] fireprotdb: 4756 destabilisierend, 1853 stabilisierend, Anteil 71%, Median -0.66
-  [vorzeichen] s2648: 2045 destabilisierend, 565 stabilisierend, Anteil 77%, Median -0.82
-! [ausreisser] 14 Werte ueber 10 kcal/mol. fireprotdb:5CG0 N391A -23.2, ...
-! [doppelte] 251 Mutationen haben Mehrfachwerte mit widerspruechlichem Vorzeichen,
-             zum Beispiel 12CA W16F mit -5.40 und +0.40
+  [scope] 9353 rows, 302 proteins, sources: fireprotdb, s2648
+  [sign] fireprotdb: 4756 destabilizing, 1853 stabilizing, share 71%, median -0.66
+  [sign] s2648: 2045 destabilizing, 565 stabilizing, share 77%, median -0.82
+! [outliers] 14 values above 10 kcal/mol. fireprotdb:5CG0 N391A -23.2, ...
+! [duplicates] 251 mutations carry repeated measurements with contradictory signs,
+               for example 12CA W16F with -5.40 and +0.40
 ```
 
-Mit einer FASTA-Datei prueft `check` zusaetzlich, ob an jeder Position wirklich
-die angegebene Wildtyp-Aminosaeure steht. Das findet verrutschte Nummerierungen:
+Given a FASTA file, `check` also verifies that each position really carries the
+stated wild type residue. This catches shifted numbering:
 
 ```bash
-ddgnorm check megascale.csv --fasta sequenzen.fasta
+ddgnorm check megascale.csv --fasta sequences.fasta
 ```
 
 ```
-  [sequenz] 17713 von 17713 Positionen tragen die erwartete Wildtyp-AS (100%)
+  [sequence] 17713 of 17713 positions carry the expected wild type residue (100%)
 ```
 
-`--strict` laesst auch Warnungen zum Rueckgabewert 1 fuehren, brauchbar in
-einer Pipeline.
+`--strict` makes warnings produce exit code 1 as well, which is useful in a
+pipeline.
 
-## Zielkonvention
+## Target convention
 
-| Groesse | Festlegung |
+| Quantity | Definition |
 |---|---|
-| Vorzeichen | negativ ist destabilisierend, positiv ist stabilisierend |
-| Einheit | kcal/mol |
-| Temperatur | Grad Celsius |
-| Position | wie in der Quelle, siehe Spalte Positionsbasis unten |
+| Sign | negative is destabilizing, positive is stabilizing |
+| Unit | kcal/mol |
+| Temperature | degrees Celsius |
+| Position | as in the source, see the position basis column below |
 
-## Konventionstabelle
+## Convention table
 
-`sign_factor` ist der Faktor, mit dem der Rohwert multipliziert wird.
+`sign_factor` is the factor the raw value is multiplied by.
 
-| Quelle | Konvention der Quelle | Faktor | Identifikator | Temperatur | Positionsbasis |
+| Source | Convention of the source | Factor | Identifier | Temperature | Position basis |
 |---|---|---|---|---|---|
-| s2648 | negativ destabilisierend | +1 | PDB + Kette | Celsius | PDB, unverified |
-| q3421 | negativ destabilisierend | +1 | PDB + Kette | Celsius | PDB |
-| q3214 | positiv destabilisierend | −1 | PDB + Kette | – | PDB, unverified |
-| q1744 | positiv destabilisierend | −1 | PDB + Kette | – | PDB, unverified |
-| ssym | positiv destabilisierend | −1 | PDB + Kette | – | PDB, unverified |
-| s669 | negativ destabilisierend | +1 | PDB + Kette | Kelvin | PDB |
-| thermomutdb | negativ destabilisierend | +1 | UniProt oder PDB | Kelvin | gemischt, unverified |
-| fireprotdb, Teil ProTherm | positiv destabilisierend | −1 | UniProt oder PDB | Celsius | unbekannt, unverified |
-| fireprotdb, Teil MegaScale | negativ destabilisierend | +1 | MegaScale-Kennung | Celsius | unbekannt, unverified |
-| fireprotdb, Teil COZYME | unbekannt | +1 | – | Celsius | unbekannt, unverified |
-| megascale | negativ destabilisierend | +1 | WT-Name | – | Sequenzindex, 1-basiert |
+| s2648 | negative destabilizing | +1 | PDB + chain | Celsius | PDB, unverified |
+| q3421 | negative destabilizing | +1 | PDB + chain | Celsius | PDB |
+| q3214 | positive destabilizing | −1 | PDB + chain | – | PDB, unverified |
+| q1744 | positive destabilizing | −1 | PDB + chain | – | PDB, unverified |
+| ssym | positive destabilizing | −1 | PDB + chain | – | PDB, unverified |
+| s669 | negative destabilizing | +1 | PDB + chain | Kelvin | PDB |
+| thermomutdb | negative destabilizing | +1 | UniProt or PDB | Kelvin | mixed, unverified |
+| fireprotdb, ProTherm part | positive destabilizing | −1 | UniProt or PDB | Celsius | unknown, unverified |
+| fireprotdb, MegaScale part | negative destabilizing | +1 | MegaScale name | Celsius | unknown, unverified |
+| fireprotdb, COZYME part | unknown | +1 | – | Celsius | unknown, unverified |
+| megascale | negative destabilizing | +1 | WT name | – | sequence index, 1-based |
 
-Wie jede Zeile belegt wurde, steht als `verified`-Block mit Methode und Zahlen
-in `ddgnorm/sources.yaml`. Alles, was dort `unverified` heisst, loest beim Laden
-eine Warnung aus. Unterdruecken mit `--quiet`.
+How each row was established is recorded as a `verified` block with method and
+numbers in `ddgnorm/sources.yaml`. Everything marked `unverified` there raises
+a warning on load. Suppress with `--quiet`.
 
-## Was das Werkzeug nicht macht
+## What the tool does not do
 
-- **Keine Zusammenfassung von Mehrfachmessungen.** FireProtDB fuehrt fuer
-  dieselbe Mutation mehrere, teils widerspruechliche Werte. Beide Zeilen kommen
-  unveraendert durch, `check` zaehlt sie.
-- **Keine Umrechnung zwischen Identifikatortypen.** Wer eine UniProt-Quelle mit
-  einer PDB-Quelle verbinden will, braucht ein eigenes Mapping. `--id-preference`
-  waehlt bei ThermoMutDB und FireProtDB, welcher Typ bevorzugt wird,
-  Voreinstellung `pdb`, weil die uebrigen Quellen fast alle auf PDB schluesseln.
-- **Kein ProThermDB.** Der Bulk-Download verlangt ein Formular mit Namen und
-  E-Mail, deshalb sind Format und Konvention dort ungeprueft.
-- **Keine Modelle, kein Training, keine Vorhersage.**
+- **No aggregation of repeated measurements.** FireProtDB carries several,
+  partly contradictory values for the same mutation. Both rows pass through
+  unchanged; `check` counts them.
+- **No translation between identifier types.** Merging a UniProt keyed source
+  with a PDB keyed one needs a mapping of your own. `--id-preference` selects
+  which type is preferred for ThermoMutDB and FireProtDB; the default is `pdb`,
+  because nearly all other sources are keyed by PDB.
+- **No ProThermDB.** Its bulk download requires a form asking for name and
+  email, so its format and convention are unverified.
+- **No models, no training, no prediction.**
 
 ## Tests
 
@@ -133,15 +130,15 @@ eine Warnung aus. Unterdruecken mit `--quiet`.
 pytest
 ```
 
-45 Tests, keine Netzzugriffe. Die Fixtures unter `tests/fixtures` sind kleine
-Ausschnitte der echten Dateien, erzeugt von `tests/make_fixtures.py`. Die drei
-oben genannten Widersprueche sind als Regressionstests festgehalten: roh
-gegenlaeufig, nach der Normalisierung gleichgerichtet.
+45 tests, no network access. The fixtures under `tests/fixtures` are small
+excerpts of the real files, produced by `tests/make_fixtures.py`. The three
+contradictions above are held as regression tests: opposite in the raw data,
+aligned after normalisation.
 
-## Zitieren
+## Citing
 
-Jede Fassung wird bei Zenodo archiviert. Die DOI 10.5281/zenodo.22648546 zeigt
-immer auf die jeweils neueste Fassung, 10.5281/zenodo.22648547 fest auf 0.1.0.
+Every release is archived on Zenodo. The DOI 10.5281/zenodo.22648546 always
+resolves to the latest version, 10.5281/zenodo.22648547 points at 0.1.0.
 
     Scheide, F. (2026). ddgnorm: unifying sign conventions, units and
     identifiers of public protein stability (ddG) datasets (v0.1.0).

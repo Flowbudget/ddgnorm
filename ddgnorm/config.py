@@ -1,7 +1,7 @@
-"""Zugriff auf sources.yaml, die kuratierte Konventionstabelle.
+"""Access to sources.yaml, the curated convention table.
 
-Die Konventionen stehen ausschliesslich in der YAML. Es wird nichts aus den
-Daten abgeleitet oder geraten.
+The conventions live in the YAML and nowhere else. Nothing is inferred or
+guessed from the data.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ _CACHE: dict[str, Any] | None = None
 
 
 def load_config() -> dict[str, Any]:
-    """Liest sources.yaml einmal und haelt sie im Speicher."""
+    """Reads sources.yaml once and keeps it in memory."""
     global _CACHE
     if _CACHE is None:
         with open(SOURCES_FILE, encoding="utf-8") as fh:
@@ -37,7 +37,7 @@ def get_source(key: str) -> dict[str, Any]:
         return cfg["sources"][key]
     except KeyError:
         raise KeyError(
-            f"Unbekannte Quelle {key!r}. Bekannt: {', '.join(source_names())}"
+            f"Unknown source {key!r}. Known sources: {', '.join(source_names())}"
         ) from None
 
 
@@ -46,10 +46,11 @@ def target() -> dict[str, Any]:
 
 
 def data_root(explicit: str | os.PathLike[str] | None = None) -> Path:
-    """Wurzel, auf die sich local_path in der YAML bezieht.
+    """Root that local_path in the YAML is relative to.
 
-    Reihenfolge: Argument, Umgebungsvariable DDGNORM_DATA_ROOT, Projektwurzel
-    (das Verzeichnis ueber dem Paket).
+    Precedence: the argument, then the environment variable
+    DDGNORM_DATA_ROOT, then the project root (the directory above the
+    package).
     """
     if explicit is not None:
         return Path(explicit)
@@ -64,10 +65,10 @@ def source_path(key: str, root: str | os.PathLike[str] | None = None) -> Path:
 
 
 def sign_factor(key: str, subset: str | None = None) -> int:
-    """Faktor, der den Rohwert in die Zielkonvention bringt.
+    """Factor that converts a raw value into the target convention.
 
-    subset ist nur fuer Quellen mit uneinheitlicher Konvention noetig
-    (derzeit FireProtDB, dort SOURCE_DATASET).
+    subset is only needed for sources whose convention is not uniform
+    (currently FireProtDB, where it splits on SOURCE_DATASET).
     """
     ddg = get_source(key)["ddg"]
     if "subsets" not in ddg:
@@ -79,14 +80,14 @@ def sign_factor(key: str, subset: str | None = None) -> int:
 
 
 def subset_rules(key: str) -> list[dict[str, Any]]:
-    """Teilmengenregeln einer Quelle, leer wenn die Konvention einheitlich ist."""
+    """Subset rules of a source, empty when its convention is uniform."""
     return get_source(key)["ddg"].get("subsets", [])
 
 
 def unverified_fields(key: str) -> list[str]:
-    """Pfade in der Konfiguration einer Quelle, die als unverified gelten.
+    """Paths in a source's configuration that are marked unverified.
 
-    Grundlage fuer die Warnungen des Loaders.
+    This is what the loader turns into warnings.
     """
     found: list[str] = []
 

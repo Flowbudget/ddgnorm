@@ -1,8 +1,8 @@
-"""Plausibilitaetspruefung eines vereinheitlichten Rahmens.
+"""Plausibility checks on a unified frame.
 
-Die Pruefung findet keine falschen Messwerte. Sie findet die Fehler, die beim
-Zusammenfuehren entstehen: umgedrehte Vorzeichen, verrutschte Positionen,
-Einheiten in kJ, widerspruechliche Doppeleintraege.
+The checks do not find wrong measurements. They find the mistakes that arise
+when sources are merged: flipped signs, shifted position numbering, values in
+kJ/mol, and contradictory duplicate entries.
 """
 
 from __future__ import annotations
@@ -13,14 +13,14 @@ from pathlib import Path
 import pandas as pd
 
 AMINO_ACIDS = set("ACDEFGHIKLMNPQRSTVWY")
-OUTLIER_LIMIT = 10.0  # kcal/mol, darueber ist ein Messwert sehr ungewoehnlich
-KJ_HINT_LIMIT = 20.0  # ab hier liegt der Verdacht auf kJ/mol nahe
+OUTLIER_LIMIT = 10.0  # kcal/mol, beyond this a measurement is very unusual
+KJ_HINT_LIMIT = 20.0  # from here on kJ/mol is the likely explanation
 DESTABILIZING_SHARE = 0.5
 
 
 @dataclass
 class Finding:
-    level: str  # "info", "warnung" oder "fehler"
+    level: str  # "info", "warning" or "error"
     topic: str
     message: str
 
@@ -32,14 +32,14 @@ class Report:
 
     @property
     def problems(self) -> list[Finding]:
-        return [f for f in self.findings if f.level in {"warnung", "fehler"}]
+        return [f for f in self.findings if f.level in {"warning", "error"}]
 
     def add(self, level: str, topic: str, message: str) -> None:
         self.findings.append(Finding(level, topic, message))
 
 
 def read_fasta(path: str | Path) -> dict[str, str]:
-    """Minimaler FASTA-Leser. Kennung ist das erste Wort der Kopfzeile."""
+    """Minimal FASTA reader. The identifier is the first word of the header."""
     sequences: dict[str, str] = {}
     name = None
     parts: list[str] = []
@@ -60,23 +60,24 @@ def _check_signs(frame: pd.DataFrame, report: Report) -> None:
     for source, group in frame.groupby("source", dropna=False):
         values = group["ddg_kcal_mol"].dropna()
         if values.empty:
-            report.add("fehler", "vorzeichen", f"{source}: kein einziger DDG-Wert")
+            report.add("error", "sign", f"{source}: not a single ddG value")
             continue
         negative = int((values < 0).sum())
         positive = int((values > 0).sum())
         share = negative / len(values)
         report.add(
             "info",
-            "vorzeichen",
-            f"{source}: {negative} destabilisierend, {positive} stabilisierend, "
-            f"Anteil destabilisierend {share:.0%}, Median {values.median():+.2f}",
+            "sign",
+            f"{source}: {negative} destabilizing, {positive} stabilizing, "
+            f"destabilizing share {share:.0%}, median {values.median():+.2f}",
         )
         if share < DESTABILIZING_SHARE:
             report.add(
-                "warnung",
-                "vorzeichen",
-                f"{source}: nur {share:.0%} der Werte sind negativ. Experimentelle "
-                "Datensaetze sind ueberwiegend destabilisierend. Konvention pruefen.",
+                "warning",
+                "sign",
+                f"{source}: only {share:.0%} of the values are negative. "
+                "Experimental datasets are mostly destabilizing. "
+                "Check the convention.",
             )
 
 
@@ -93,39 +94,41 @@ def _check_outliers(frame: pd.DataFrame, report: Report) -> None:
             for r in worst.itertuples()
         )
         report.add(
-            "warnung",
-            "ausreisser",
-            f"{len(extreme)} Werte ueber {OUTLIER_LIMIT:.0f} kcal/mol. {examples}",
+            "warning",
+            "outliers",
+            f"{len(extreme)} values above {OUTLIER_LIMIT:.0f} kcal/mol. {examples}",
         )
     if values.median() > KJ_HINT_LIMIT:
         report.add(
-            "fehler",
-            "einheit",
-            f"Median des Betrags liegt bei {values.median():.1f}. Das sieht nach "
-            "kJ/mol aus, erwartet wird kcal/mol.",
+            "error",
+            "unit",
+            f"Median magnitude is {values.median():.1f}. That looks like "
+            "kJ/mol, but kcal/mol is expected.",
         )
 
 
 def _check_fields(frame: pd.DataFrame, report: Report) -> None:
     missing = int(frame["ddg_kcal_mol"].isna().sum())
     if missing:
-        report.add("warnung", "felder", f"{missing} Zeilen ohne DDG-Wert")
+        report.add("warning", "fields", f"{missing} rows without a ddG value")
     bad_aa = frame[
         ~frame["wt_aa"].isin(AMINO_ACIDS) | ~frame["mut_aa"].isin(AMINO_ACIDS)
     ]
     if not bad_aa.empty:
         report.add(
-            "fehler", "felder", f"{len(bad_aa)} Zeilen mit ungueltigem Aminosaeurecode"
+            "error", "fields", f"{len(bad_aa)} rows with an invalid amino acid code"
         )
     same = frame[frame["wt_aa"] == frame["mut_aa"]]
     if not same.empty:
         report.add(
-            "fehler", "felder", f"{len(same)} Zeilen mit gleicher WT- und Mutanten-AS"
+            "error",
+            "fields",
+            f"{len(same)} rows where wild type and mutant amino acid are equal",
         )
     nonpositive = frame[frame["position"] <= 0]
     if not nonpositive.empty:
         report.add(
-            "warnung", "felder", f"{len(nonpositive)} Zeilen mit Position kleiner 1"
+            "warning", "fields", f"{len(nonpositive)} rows with a position below 1"
         )
 
 
@@ -140,18 +143,18 @@ def _check_duplicates(frame: pd.DataFrame, report: Report) -> None:
     contradictory = spans[(spans["min"] < 0) & (spans["max"] > 0)]
     report.add(
         "info",
-        "doppelte",
-        f"{len(repeated)} Mutationen kommen mehrfach vor",
+        "duplicates",
+        f"{len(repeated)} mutations appear more than once",
     )
     if not contradictory.empty:
         example = contradictory.iloc[0]
         first = contradictory.index[0]
         report.add(
-            "warnung",
-            "doppelte",
-            f"{len(contradictory)} Mutationen haben Mehrfachwerte mit "
-            f"widerspruechlichem Vorzeichen, zum Beispiel {first[1]} "
-            f"{first[3]}{first[2]}{first[4]} mit {example['min']:+.2f} und "
+            "warning",
+            "duplicates",
+            f"{len(contradictory)} mutations carry repeated measurements with "
+            f"contradictory signs, for example {first[1]} "
+            f"{first[3]}{first[2]}{first[4]} with {example['min']:+.2f} and "
             f"{example['max']:+.2f}",
         )
 
@@ -176,48 +179,48 @@ def _check_sequences(
             if len(examples) < 3:
                 examples.append(
                     f"{row.protein_id} {row.wt_aa}{row.position}{row.mut_aa} "
-                    f"(Sequenz hat {sequence[row.position - 1]})"
+                    f"(sequence has {sequence[row.position - 1]})"
                 )
     checked = matched + mismatched
     if checked:
         report.add(
             "info",
-            "sequenz",
-            f"{matched} von {checked} Positionen tragen die erwartete Wildtyp-AS "
-            f"({matched / checked:.0%})",
+            "sequence",
+            f"{matched} of {checked} positions carry the expected wild type "
+            f"residue ({matched / checked:.0%})",
         )
         if matched / checked < 0.95:
             report.add(
-                "warnung",
-                "sequenz",
-                "Weniger als 95 Prozent Treffer. Das deutet auf eine andere "
-                f"Positionsnummerierung hin. Beispiele: {'; '.join(examples)}",
+                "warning",
+                "sequence",
+                "Fewer than 95 percent match. That points at a different "
+                f"position numbering. Examples: {'; '.join(examples)}",
             )
     if out_of_range:
         report.add(
-            "warnung",
-            "sequenz",
-            f"{out_of_range} Positionen liegen ausserhalb der Sequenzlaenge",
+            "warning",
+            "sequence",
+            f"{out_of_range} positions lie beyond the length of the sequence",
         )
     if unknown:
         report.add(
-            "info", "sequenz", f"{unknown} Zeilen ohne passenden Eintrag in der FASTA"
+            "info", "sequence", f"{unknown} rows have no matching FASTA entry"
         )
 
 
 def check_frame(
     frame: pd.DataFrame, sequences: dict[str, str] | None = None
 ) -> Report:
-    """Prueft einen vereinheitlichten Rahmen und gibt einen Bericht zurueck."""
+    """Checks a unified frame and returns a report."""
     report = Report(rows=len(frame))
     if frame.empty:
-        report.add("fehler", "umfang", "Der Rahmen ist leer")
+        report.add("error", "scope", "The frame is empty")
         return report
     report.add(
         "info",
-        "umfang",
-        f"{len(frame)} Zeilen, {frame['protein_id'].nunique()} Proteine, "
-        f"Quellen: {', '.join(sorted(frame['source'].unique()))}",
+        "scope",
+        f"{len(frame)} rows, {frame['protein_id'].nunique()} proteins, "
+        f"sources: {', '.join(sorted(frame['source'].unique()))}",
     )
     _check_signs(frame, report)
     _check_outliers(frame, report)

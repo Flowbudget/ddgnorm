@@ -1,7 +1,7 @@
-"""Erzeugt die kleinen Testdateien unter tests/fixtures aus data/raw.
+"""Builds the small test files under tests/fixtures from data/raw.
 
-Einmal ausgefuehrt, das Ergebnis liegt im Repository. Die Tests selbst laden
-nichts herunter und lesen data/raw nicht. Aufruf aus der Projektwurzel:
+Run once; the result is committed. The tests themselves download nothing and
+never read data/raw. Call it from the project root:
 
     python tests/make_fixtures.py
 """
@@ -29,7 +29,7 @@ def mutation_key(pdb: str, code: str):
 def main() -> None:
     OUT.mkdir(exist_ok=True)
 
-    # --- FireProtDB (ProTherm-Teil) und S2648: gemeinsame Eintraege
+    # --- FireProtDB (ProTherm part) and S2648: shared entries
     s2648 = json.loads((RAW / "protddg" / "s2648-10fold-split-0.json").read_text())
     s2648_by_key = {}
     for entry in s2648:
@@ -47,8 +47,8 @@ def main() -> None:
         "EXP_TEMPERATURE",
         "SOURCE_DATASET",
     ]
-    # Ueber viele Proteine streuen, sonst bildet die Fixture nur die
-    # Doppelmessungen eines einzigen Eintrags ab.
+    # Spread over many proteins, otherwise the fixture only captures the
+    # repeated measurements of a single entry.
     per_key: dict[tuple, list[dict]] = {}
     mega_rows, cozyme_rows = [], []
     with open(RAW / "fireprotdb_ddg_only.csv", newline="", encoding="utf-8",
@@ -75,8 +75,8 @@ def main() -> None:
         used_keys.append(key)
         if len(used_keys) >= 40:
             break
-    print(f"FireProtDB-Fixture: {len(used_keys)} Mutationen aus "
-          f"{len(per_protein)} Proteinen, {len(fp_rows)} Zeilen")
+    print(f"FireProtDB fixture: {len(used_keys)} mutations from "
+          f"{len(per_protein)} proteins, {len(fp_rows)} rows")
 
     with open(OUT / "fireprotdb_mini.csv", "w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=fp_columns)
@@ -87,7 +87,7 @@ def main() -> None:
         json.dumps([s2648_by_key[k] for k in dict.fromkeys(used_keys)], indent=1)
     )
 
-    # --- Q3421 und Q3214: gemeinsame Eintraege
+    # --- Q3421 and Q3214: shared entries
     q3421_lines, q3421_keys = [], set()
     for line in (RAW / "thermonet" / "Q3421.txt").read_text().splitlines():
         parts = line.split()
@@ -113,7 +113,7 @@ def main() -> None:
             q3214_lines.append(line)
     (OUT / "q3214_mini.txt").write_text("\n".join(q3214_lines) + "\n")
 
-    # --- Megascale: stabilisierende und destabilisierende Zeilen
+    # --- Megascale: stabilizing and destabilizing rows
     keep, stabilizing = [], 0
     with open(RAW / "megascale_ddG_slim.csv", newline="") as fh:
         for row in csv.DictReader(fh):
@@ -133,7 +133,7 @@ def main() -> None:
         writer.writeheader()
         writer.writerows({c: r[c] for c in cols} for r in keep)
 
-    # Wildtyp-Sequenzen der gleichen Proteine, fuer die Sequenzpruefung
+    # Wild type sequences of the same proteins, for the sequence check
     wanted = {r["WT_name"] for r in keep}
     sequences: dict[str, str] = {}
     with open(RAW / "megascale_ddG_slim.csv", newline="") as fh:
@@ -146,7 +146,7 @@ def main() -> None:
         for name, sequence in sequences.items():
             fh.write(f">{name.replace('.pdb', '').upper()}\n{sequence}\n")
 
-    # --- kleine Ausschnitte der uebrigen Quellen
+    # --- small excerpts of the remaining sources
     ssym = (RAW / "thermonet" / "s_sym.txt").read_text().splitlines()
     (OUT / "ssym_mini.txt").write_text("\n".join(ssym[:20]) + "\n")
     q1744 = (RAW / "thermonet" / "Q1744.txt").read_text().splitlines()
@@ -170,7 +170,7 @@ def main() -> None:
     fields = ["uniprot", "PDB_wild", "mutated_chain", "mutation_code", "ddg",
               "ph", "temperature", "mutation_type", "effect"]
     sample = [{k: e.get(k) for k in fields} for e in singles[:25]]
-    # ein Eintrag ohne UniProt, damit der Rueckfall geprueft wird
+    # one entry without UniProt so the fallback is exercised
     without_uniprot = next(
         ({k: e.get(k) for k in fields} for e in singles if not e.get("uniprot")), None
     )

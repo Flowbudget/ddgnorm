@@ -1,4 +1,4 @@
-"""Tests der Kommandozeile. Arbeiten nur auf den Fixtures."""
+"""Command line tests. They work on the fixtures only."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from ddgnorm.loaders import COLUMNS
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
-def test_load_schreibt_csv(tmp_path):
+def test_load_writes_csv(tmp_path):
     target = tmp_path / "out.csv"
     result = CliRunner().invoke(
         main,
@@ -25,7 +25,7 @@ def test_load_schreibt_csv(tmp_path):
     assert len(frame) > 0
 
 
-def test_load_meldet_unverified_felder(tmp_path):
+def test_load_reports_unverified_fields(tmp_path):
     result = CliRunner().invoke(
         main,
         [
@@ -39,7 +39,7 @@ def test_load_meldet_unverified_felder(tmp_path):
     assert "unverified" in result.output
 
 
-def test_load_quiet_unterdrueckt_warnungen(tmp_path):
+def test_load_quiet_suppresses_warnings(tmp_path):
     result = CliRunner().invoke(
         main,
         [
@@ -52,7 +52,7 @@ def test_load_quiet_unterdrueckt_warnungen(tmp_path):
     assert "COZYME" not in result.output
 
 
-def test_load_lehnt_unbekannte_quelle_ab(tmp_path):
+def test_load_rejects_unknown_source(tmp_path):
     result = CliRunner().invoke(
         main, ["load", "prothermdb", "-o", str(tmp_path / "x.csv")]
     )
@@ -60,7 +60,7 @@ def test_load_lehnt_unbekannte_quelle_ab(tmp_path):
     assert "prothermdb" in result.output
 
 
-def test_check_meldet_sauberen_datensatz(tmp_path):
+def test_check_passes_on_clean_data(tmp_path):
     target = tmp_path / "out.csv"
     CliRunner().invoke(
         main,
@@ -68,10 +68,10 @@ def test_check_meldet_sauberen_datensatz(tmp_path):
     )
     result = CliRunner().invoke(main, ["check", str(target)])
     assert result.exit_code == 0, result.output
-    assert "[vorzeichen]" in result.output
+    assert "[sign]" in result.output
 
 
-def test_check_erkennt_umgedrehte_datei(tmp_path):
+def test_check_detects_a_flipped_file(tmp_path):
     target = tmp_path / "out.csv"
     CliRunner().invoke(
         main,
@@ -83,22 +83,22 @@ def test_check_erkennt_umgedrehte_datei(tmp_path):
     frame.to_csv(flipped, index=False)
 
     result = CliRunner().invoke(main, ["check", str(flipped)])
-    assert "Konvention pruefen" in result.output
+    assert "Check the convention" in result.output
     assert result.exit_code == 0
 
     strict = CliRunner().invoke(main, ["check", str(flipped), "--strict"])
     assert strict.exit_code == 1
 
 
-def test_check_verlangt_die_erwarteten_spalten(tmp_path):
-    fremd = tmp_path / "fremd.csv"
-    pd.DataFrame({"a": [1], "b": [2]}).to_csv(fremd, index=False)
-    result = CliRunner().invoke(main, ["check", str(fremd)])
+def test_check_requires_the_expected_columns(tmp_path):
+    foreign = tmp_path / "foreign.csv"
+    pd.DataFrame({"a": [1], "b": [2]}).to_csv(foreign, index=False)
+    result = CliRunner().invoke(main, ["check", str(foreign)])
     assert result.exit_code != 0
-    assert "fehlen die Spalten" in result.output
+    assert "missing columns" in result.output
 
 
-def test_check_mit_fasta(tmp_path):
+def test_check_with_fasta(tmp_path):
     target = tmp_path / "mega.csv"
     CliRunner().invoke(
         main,
@@ -113,5 +113,5 @@ def test_check_mit_fasta(tmp_path):
         ["check", str(target), "--fasta", str(FIXTURES / "megascale_mini.fasta")],
     )
     assert result.exit_code == 0, result.output
-    assert "[sequenz]" in result.output
+    assert "[sequence]" in result.output
     assert "100%" in result.output

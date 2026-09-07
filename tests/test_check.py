@@ -1,4 +1,4 @@
-"""Tests der Plausibilitaetspruefung."""
+"""Tests of the plausibility checks."""
 
 from __future__ import annotations
 
@@ -6,7 +6,6 @@ import warnings
 from pathlib import Path
 
 import pandas as pd
-import pytest
 
 from ddgnorm.check import check_frame, read_fasta
 from ddgnorm.loaders import ConventionWarning, load_source
@@ -39,56 +38,56 @@ def topics(report, level=None) -> set[str]:
     }
 
 
-def test_saubere_daten_ohne_beanstandung():
+def test_clean_data_raises_nothing():
     report = check_frame(frame())
     assert report.problems == []
-    assert "vorzeichen" in topics(report, "info")
+    assert "sign" in topics(report, "info")
 
 
-def test_umgedrehte_vorzeichen_werden_gemeldet():
+def test_flipped_signs_are_reported():
     report = check_frame(frame(ddg_kcal_mol=[1.0, 2.0, 0.5, 3.0, -0.7, 1.2]))
-    assert "vorzeichen" in topics(report, "warnung")
+    assert "sign" in topics(report, "warning")
 
 
-def test_kj_statt_kcal_wird_als_fehler_gemeldet():
+def test_kj_instead_of_kcal_is_an_error():
     kj = [v * 4.184 * 3 for v in (-4.0, -6.0, -5.0, -7.0, -8.0, -5.5)]
     report = check_frame(frame(ddg_kcal_mol=kj))
-    assert "einheit" in topics(report, "fehler")
+    assert "unit" in topics(report, "error")
 
 
-def test_ausreisser_werden_gemeldet():
+def test_outliers_are_reported():
     report = check_frame(frame(ddg_kcal_mol=[-1.0, -2.0, -0.5, -30.0, 0.7, -1.2]))
-    assert "ausreisser" in topics(report, "warnung")
+    assert "outliers" in topics(report, "warning")
 
 
-def test_ungueltige_aminosaeure():
+def test_invalid_amino_acid():
     report = check_frame(frame(wt_aa=list("ACDEFX")))
-    assert "felder" in topics(report, "fehler")
+    assert "fields" in topics(report, "error")
 
 
-def test_wt_gleich_mutante():
+def test_wild_type_equals_mutant():
     report = check_frame(frame(mut_aa=list("ACDEFG")))
-    assert "felder" in topics(report, "fehler")
+    assert "fields" in topics(report, "error")
 
 
-def test_position_kleiner_eins():
+def test_position_below_one():
     report = check_frame(frame(position=[0, 11, 12, 13, 14, 15]))
-    assert "felder" in topics(report, "warnung")
+    assert "fields" in topics(report, "warning")
 
 
-def test_widerspruechliche_doppeleintraege():
+def test_contradictory_duplicates():
     doubled = pd.concat([frame(), frame(ddg_kcal_mol=[1.5] * 6)], ignore_index=True)
     report = check_frame(doubled)
-    assert "doppelte" in topics(report, "warnung")
+    assert "duplicates" in topics(report, "warning")
 
 
-def test_leerer_rahmen():
+def test_empty_frame():
     report = check_frame(frame().iloc[0:0])
-    assert "umfang" in topics(report, "fehler")
+    assert "scope" in topics(report, "error")
 
 
 # --------------------------------------------------------------------------
-# Sequenzabgleich
+# Sequence comparison
 
 
 def megascale_frame() -> pd.DataFrame:
@@ -97,32 +96,32 @@ def megascale_frame() -> pd.DataFrame:
         return load_source("megascale", path=FIXTURES / "megascale_mini.csv")
 
 
-def test_fasta_leser():
+def test_fasta_reader():
     sequences = read_fasta(FIXTURES / "megascale_mini.fasta")
     assert sequences
     assert all(seq and seq.isalpha() for seq in sequences.values())
 
 
-def test_wildtyp_aminosaeure_passt_zur_sequenz():
+def test_wild_type_residue_matches_the_sequence():
     report = check_frame(
         megascale_frame(), read_fasta(FIXTURES / "megascale_mini.fasta")
     )
-    treffer = [f for f in report.findings if f.topic == "sequenz"]
-    assert treffer, "keine Sequenzpruefung ausgefuehrt"
-    assert "100%" in treffer[0].message
-    assert "sequenz" not in topics(report, "warnung")
+    hits = [f for f in report.findings if f.topic == "sequence"]
+    assert hits, "no sequence check ran"
+    assert "100%" in hits[0].message
+    assert "sequence" not in topics(report, "warning")
 
 
-def test_verschobene_positionen_fallen_auf():
+def test_shifted_positions_are_caught():
     shifted = megascale_frame()
     shifted["position"] = shifted["position"] + 1
     report = check_frame(shifted, read_fasta(FIXTURES / "megascale_mini.fasta"))
-    assert "sequenz" in topics(report, "warnung")
+    assert "sequence" in topics(report, "warning")
 
 
-def test_unbekannte_proteine_werden_nur_gezaehlt():
+def test_unknown_proteins_are_only_counted():
     other = megascale_frame()
-    other["protein_id"] = "GIBTESNICHT"
+    other["protein_id"] = "DOESNOTEXIST"
     report = check_frame(other, read_fasta(FIXTURES / "megascale_mini.fasta"))
-    hinweise = [f for f in report.findings if f.topic == "sequenz"]
-    assert any("ohne passenden Eintrag" in f.message for f in hinweise)
+    notes = [f for f in report.findings if f.topic == "sequence"]
+    assert any("no matching FASTA entry" in f.message for f in notes)

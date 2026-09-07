@@ -1,4 +1,4 @@
-"""ddgnorm — vereinheitlicht oeffentliche DDG-Datensaetze zur Proteinstabilitaet."""
+"""ddgnorm - unify public protein stability (ddG) datasets."""
 
 from .loaders import COLUMNS, ConventionWarning, load_source
 from .config import source_names, get_source, target
