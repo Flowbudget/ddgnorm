@@ -386,6 +386,7 @@ sources:
     name: FireProtDB
     version: "CSV export via api/search, retrieved 2026-09-07"
     reference: "Stourac et al. 2021, Nucleic Acids Res 49:D319"
+    reference_v2: "Musil et al. 2026, Nucleic Acids Res 54, doi 10.1093/nar/gkaf1211"
     url: https://loschmidt.chemi.muni.cz/fireprotdb/api/search?format=csv&sort=
     local_path: data/raw/fireprotdb_ddg_only.csv
     local_path_note: >-
@@ -421,6 +422,34 @@ sources:
       unit_status: verified
       convention: mixed_per_subset
       status: verified
+      documented_convention:
+        value: negative_destabilizing
+        note: >-
+          Careful: the convention the source documents is not the one its data
+          follows throughout. The help page and the 2.0 paper both classify a
+          mutation as stabilising below -0.5 kcal/mol and as destabilising
+          above 0.5 kcal/mol, which means negative is stabilizing. The
+          ProTherm rows follow that. The MegaScale rows do not; they carry the
+          convention of their own source, where positive is stabilizing. The
+          measured behaviour per subset is what ddgnorm applies, see below.
+        evidence:
+          date: 2026-09-07
+          method: >-
+            Applied the documented rule to the MegaScale rows and compared it
+            with the Stabilizing column, which the glossary describes as the
+            tag taken over from the MegaScale dataset. Tag and rule never
+            agree.
+          numbers:
+            tag_false_but_rule_says_stabilizing: 382527
+            tag_true_but_rule_says_destabilizing: 2388
+            tag_false_and_rule_says_neutral: 145708
+            share_positive_protherm: "68.6 %"
+            share_positive_megascale: "15.7 %"
+        reported_upstream: >-
+          A report to the maintainers was drafted on 2026-09-07. If the import
+          is corrected, the MegaScale rows will follow the documented
+          convention and the sign_factor of that subset has to change from 1
+          to -1. Re-verify against the source table before changing it.
       subsets:
         - match: {column: SOURCE_DATASET, equals: ProTherm}
           rows: 8277

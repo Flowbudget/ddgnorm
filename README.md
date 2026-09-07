@@ -12,7 +12,9 @@ documented nowhere. Measured on the data itself on 2026-09-07:
 - **FireProtDB against S2648**: of 431 shared mutations, 395 carried the
   opposite sign.
 - **FireProtDB against itself**: the rows taken from ProTherm are flipped, the
-  MegaScale rows are not. One rule per file is not enough.
+  MegaScale rows are not. One rule per file is not enough. Its documentation
+  states a single convention for the whole export, and the MegaScale rows,
+  98 percent of all its ddG values, do not follow it.
 - **Q3421 against Q3214**: the same 3214 mutations, the same magnitudes,
   opposite signs, both files sitting in the same repository.
 - **Ssym against S2648**: 179 of 194 shared mutations opposite.
@@ -120,6 +122,13 @@ a warning on load. Suppress with `--quiet`.
   with a PDB keyed one needs a mapping of your own. `--id-preference` selects
   which type is preferred for ThermoMutDB and FireProtDB; the default is `pdb`,
   because nearly all other sources are keyed by PDB.
+- **Only the ddG column of FireProtDB.** Its export holds 5,465,660 rows, of
+  which 613,208 carry a value in the DDG column. Those are the ones ddgnorm
+  reads. The bulk of the rest is the Human Domainome data in
+  DOMAINOME_DDG and DOMAINOME_FITNESS, roughly four million rows of
+  normalised abundance scores rather than ddG in kcal/mol. Mixing them into
+  the same column would put two different quantities under one name, so they
+  are left out on purpose.
 - **No ProThermDB.** Its bulk download requires a form asking for name and
   email, so its format and convention are unverified.
 - **No models, no training, no prediction.**
@@ -138,8 +147,9 @@ aligned after normalisation.
 ## Citing
 
 Every release is archived on Zenodo. The DOI 10.5281/zenodo.22648546 always
-resolves to the latest version, 10.5281/zenodo.22648547 points at 0.1.0.
+resolves to the latest version; each release also receives a version DOI of
+its own, listed on the Zenodo record.
 
     Scheide, F. (2026). ddgnorm: unifying sign conventions, units and
-    identifiers of public protein stability (ddG) datasets (v0.1.0).
+    identifiers of public protein stability (ddG) datasets.
     Zenodo. https://doi.org/10.5281/zenodo.22648546

@@ -11,12 +11,12 @@ doi: 10.5281/zenodo.22648546
 identifiers:
   - type: doi
     value: 10.5281/zenodo.22648546
-    description: "Concept DOI, zeigt immer auf die neueste Fassung"
+    description: "Concept DOI, always resolves to the latest version"
   - type: doi
     value: 10.5281/zenodo.22648547
-    description: "DOI der Fassung 0.1.0"
+    description: "Version DOI of release 0.1.0"
 license: MIT
-version: 0.1.0
+version: 0.1.1
 date-released: "2026-09-07"
 abstract: >-
   Public datasets of protein stability changes upon point mutation (ddG)
